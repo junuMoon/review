@@ -27,3 +27,6 @@ def double(x: RT) -> RT: returnx*2
     - Duck(Dynamic) Typing: 런타임에 오리처럼 행동하면 오리임
     - Static Duck Typing(Protocols): 컴파일 시 오리처럼 행동하는지 확인한다면, 런타임에 실제 타입은 신경 쓰지 않는다.
         - Python can enforce type constraints at the static analysis level (like when using tools such as mypy) while still embracing a flexible, duck-typing-like approach.
+
+<img width="586" alt="image" src="https://github.com/junuMoon/review/assets/52732827/eb366189-4b5f-4c16-b33b-2f6a7eac4f28">
+
