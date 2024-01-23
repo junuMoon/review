@@ -80,3 +80,8 @@ Based on the voice, the mood of the person is disgusted.<im_end>
 - The purpose of SRWT is twofold: firstly, to improve the model’s ability to align audio signals with fine-grained timestamps; secondly, to support grounding of speech and audio, and grounding-based QA tasks in Qwen-Audio-Chat, such as finding the starting and ending time of an audio segment mentioning a person’s name or identifying whether a sound occurs in the given audio
 
 <img width="714" alt="image" src="https://github.com/junuMoon/review/assets/52732827/41386420-da15-4942-82c4-6f193e7b82b9">
+
+```
+# Inference result
+<audio>https://qianwen-res.oss-cn-beijing.aliyuncs.com/Qwen-Audio/1272-128104-0000.flac</audio><|startoftranscription|><|en|><|transcribe|><|en|><|timestamps|><|wo_itn|>mister<|0.78|>quilter<|1.24|>is<|1.42|>the<|1.52|>apostle<|2.13|>of<|2.28|>the<|2.33|>middle<|2.60|>classes<|3.26|><|sil|><|3.31|>and<|3.49|>we<|3.59|>are<|3.66|>glad<|4.08|>to<|4.19|>welcome<|4.61|>his<|4.83|>gospel<|5.42|><|sil|><|5.86|><|endoftext|>
+```
