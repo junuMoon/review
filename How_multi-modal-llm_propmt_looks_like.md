@@ -36,3 +36,25 @@ LLASM RESPONSE TOKENS
 
 ## Qwen-Audio: Advancing Universal Audio Understanding via Unified Large-Scale Audio-Language Models
 - https://arxiv.org/pdf/2311.07919.pdf
+- Multi-task Training Format Framework Motivated by Whisper (Radford et al., 2023), to incorporate different kinds of audio, we propose a multitask training format framework as follows:
+  - Transcription Tag: The initiation of prediction is denoted using a transcription tag. The `<|startof- transcripts|>` is employed to indicate the tasks involve accurately transcribing the spoken words and capturing the linguistic content of a speech recording, such as speech recognition and speech translation tasks. For other tasks, the `<|startofanalysis|>` tag is utilized.
+  - Audio Language Tag: Then, we incorporate a language tag that indicates the spoken language in the audio. This tag uses a unique token assigned to each language present in our training set, eight languages in totally. In the case where an audio segment does not contain any speech, such as natural sounds and music, the model is trained to predict a `<|unknown|>` token.
+  - Task Tag: The subsequent tokens specify the task. We categorize the collected audio tasks into five categories: `<|transcribe|>, <|translate|>, <|caption|>, <|analysis|>, and <|question-answer|>` tasks. For question-answer (QA) tasks, we append the corresponding questions after the tag.
+  - Text Language Tag: The tag token specifies the language of output text sequences.
+  - Timestamps Tag: The presence of a `<|timestamps|> or <|notimestamps|>` token determines whether the model needs to predict timestamps or not. Different from the sentence-level timestamps used in Whisper, **the inclusion of the <|timestamps|> tag requires the model to perform fine-grained word-level timestamp prediction, abbreviated as SRWT (Speech Recognition with Word-level Timestamps)**. The prediction of these timestamps is interleaved with the transcription words: the start time token is predicted before each transcription token, while the end time token is predicted after. According to our experiments, **SRWT improves the ability of the model to align audio signals with timestamps. This improved alignment contributes to a comprehensive understanding of speech signals by the model, resulting in notable advancements across many tasks such as speech recognition and audio QA tasks.**
+  - Output Instruction: Lastly, we provide output instruction to further specify the task and desired format for different subtasks, and then the text output begins.
+- To handle multi-audio dialogue and multiple audio inputs effectively, we introduce the convention of labeling different audios with `"Audio id:"`, where id corresponds to the order of the audio input dialogue. In terms of dialogue format, we construct our instruction tuning dataset using the ChatML (Openai) format. In this format, each interaction’s statement is marked with two special tokens (`<im_start> and <im_end>`) to facilitate dialogue termination.
+
+```
+<im_start>user
+Audio 1: <audio>emov-db/141-168-0155.wav</audio>what does the speaker say?<im_end> <im_start>assistant
+The speaker says in English, "Won’t you draw up, gentlemen.".<im_end>
+<im_start>user
+What’s the mood of the person?<im_end>
+<im_start>assistant
+Based on the voice, the mood of the person is disgusted.<im_end>
+```
+
+- The purpose of SRWT is twofold: firstly, to improve the model’s ability to align audio signals with fine-grained timestamps; secondly, to support grounding of speech and audio, and grounding-based QA tasks in Qwen-Audio-Chat, such as finding the starting and ending time of an audio segment mentioning a person’s name or identifying whether a sound occurs in the given audio
+
+<img width="714" alt="image" src="https://github.com/junuMoon/review/assets/52732827/41386420-da15-4942-82c4-6f193e7b82b9">
