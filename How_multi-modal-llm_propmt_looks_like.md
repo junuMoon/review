@@ -65,6 +65,8 @@ LLASM RESPONSE TOKENS
   - Output Instruction: Lastly, we provide output instruction to further specify the task and desired format for different subtasks, and then the text output begins.
 - To handle multi-audio dialogue and multiple audio inputs effectively, we introduce the convention of labeling different audios with `"Audio id:"`, where id corresponds to the order of the audio input dialogue. In terms of dialogue format, we construct our instruction tuning dataset using the ChatML (Openai) format. In this format, each interaction’s statement is marked with two special tokens (`<im_start> and <im_end>`) to facilitate dialogue termination.
 
+<img width="883" alt="image" src="https://github.com/junuMoon/review/assets/52732827/fbfea011-e557-41b7-a199-40f2d93d2231">
+
 ```
 <im_start>user
 Audio 1: <audio>emov-db/141-168-0155.wav</audio>what does the speaker say?<im_end> <im_start>assistant
