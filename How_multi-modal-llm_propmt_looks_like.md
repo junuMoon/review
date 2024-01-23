@@ -7,6 +7,11 @@ $$[INST] <Img> < ImageFeature> </Img> [Task Identifier] Instruction [/INST]$$
 
 ```python
 class LlavaMetaForCausalLM(ABC):
+    ...
+
+    def prepare_inputs_labels_for_multimodal(
+        self, input_ids, position_ids, attention_mask, past_key_values, labels, images
+    ):
     for batch_idx, cur_input_ids in enumerate(input_ids):
         num_images = (cur_input_ids == IMAGE_TOKEN_INDEX).sum()
         if num_images == 0:
@@ -17,6 +22,7 @@ class LlavaMetaForCausalLM(ABC):
             new_labels.append(labels[batch_idx])
             cur_image_idx += 1
             continue
+    ...
 ```
 
 - we have proposed six different task identifiers for visual question answering, image caption, grounded image captioning, referring expression comprehension, referring expression generation, and phrase parsing and grounding respectively.
