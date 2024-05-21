@@ -30,4 +30,14 @@
 ---
 
 ## Method
-- 
+### Attention Score Calculation
+$$
+A_{ij} = \frac{\exp(q_i^T K_j / \sqrt{d})}{\sum_{t=1}^{\lceil i/B \rceil} \exp(q_i^T K_t / \sqrt{d})}
+$$
+
+- key block: $K_j = (k_{(j-1)B+1}, \ldots, k_{jB})$
+  - $K_j$: j번째 블록의 키 벡터들의 집합.
+  - $k_{(j-1)B+1}$: j번째 블록의 첫 번째 키 벡터.
+  - $k_{jB}$: j번째 블록의 마지막 키 벡터.
+  - $B$: 블록의 크기. 각 블록이 몇 개의 키 벡터를 포함하는지를 나타냄.
+  - $j$: 현재 블록의 번호.
