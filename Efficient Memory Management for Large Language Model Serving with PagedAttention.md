@@ -41,3 +41,11 @@ $$
   - $k_{jB}$: j번째 블록의 마지막 키 벡터.
   - $B$: 블록의 크기. 각 블록이 몇 개의 키 벡터를 포함하는지를 나타냄.
   - $j$: 현재 블록의 번호.
+
+### KV Cache Manager
+
+<img width="824" alt="image" src="https://github.com/junuMoon/review/assets/52732827/4d820508-1237-41ee-9aba-7aeefd471e7a">
+
+- OS partitions memory into fixed-sized pages and maps user programs’ logical pages to physical pages. Contiguous logical pages can correspond to non-contiguous physical memory pages, allowing user programs to access memory as though it were contiguous.
+- A request’s KV cache is represented as a series of logical KV blocks, filled from left to right as new tokens and their KV cache are generated. The last KV block’s unfilled positions are reserved for future generations. On GPU workers, a block engine allocates a contiguous chunk of GPU DRAM and divides it into physical KV blocks.
+- The KV block manager also maintains block tables—the mapping between logical and physical KV blocks of each request. Each block table entry records the corresponding physical blocks of a logical block and the number of filled positions. Separating logical and physical KV blocks allows vLLM to dynamically grow the KV cache memory without reserving it for all positions in advance,
