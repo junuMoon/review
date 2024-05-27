@@ -48,4 +48,22 @@ $$
 
 - OS partitions memory into fixed-sized pages and maps user programs’ logical pages to physical pages. Contiguous logical pages can correspond to non-contiguous physical memory pages, allowing user programs to access memory as though it were contiguous.
 - A request’s KV cache is represented as a series of logical KV blocks, filled from left to right as new tokens and their KV cache are generated. The last KV block’s unfilled positions are reserved for future generations. On GPU workers, a block engine allocates a contiguous chunk of GPU DRAM and divides it into physical KV blocks.
-- The KV block manager also maintains block tables—the mapping between logical and physical KV blocks of each request. Each block table entry records the corresponding physical blocks of a logical block and the number of filled positions. Separating logical and physical KV blocks allows vLLM to dynamically grow the KV cache memory without reserving it for all positions in advance,
+- The KV block manager also maintains block tables—the mapping between logical and physical KV blocks of each request. Each block table entry records the corresponding physical blocks of a logical block and the number of filled positions. Separating logical and physical KV blocks allows vLLM to dynamically grow the KV cache memory without reserving it for all positions in advance
+
+### Scheduling and Preemption
+- (1) Which blocks should it evict? (2) How to recover evicted blocks if needed again?
+- Swapping: When vLLM exhausts free physical blocks for new tokens, it selects a set of sequences to evict and transfer their KV cache to the CPU. Once a request completes, its blocks are freed from memory, and the blocks of a preempted sequence are brought back in to continue the processing of that sequence.
+- Recomputation: we simply recompute the KV cache when the preempted sequences are rescheduled. Note that recomputation latency can be significantly lower than the original latency, as the tokens generated at decoding can be concatenated with the original user prompt as a new prompt—their KV cache at all positions can be generated in one prompt phase iteration.
+
+### Distributed Execution
+- SPMD (Single Program Multiple Data) execution schedule, wherein the linear layers are partitioned to perform block-wise matrix multiplication, and the the GPUs constantly synchronize intermediate results via an all-reduce operation.
+  - Specifically, the attention operator is split on the attention head dimension, each SPMD process takes care of a subset of attention heads in multi-head attention
+  - vLLM에서의 모델 병렬 처리(Model Parallelism)는 멀티헤드 어텐션 블록의 각 헤드를 나누어 샤딩(Shard)하고, 각 샤드가 동일한 데이터를 처리하는 방식
+- vLLM features a single KV cache manager within the cen- tralized scheduler. Different GPU workers share the manager, as well as the mapping from logical blocks to physical blocks. Although each GPU worker has the same physical block IDs, a worker only stores a portion of the KV cache for its corresponding attention heads.
+  - the scheduler first prepares the message with input token IDs/block table
+  - GPU workers start to execute the model with the input token IDs.
+  - In the attention layers, the GPU workers read the KV cache according to the block table in the control message.
+  - GPU workers send the sampled tokens of this iteration back to the scheduler
+
+## Implementation
+
