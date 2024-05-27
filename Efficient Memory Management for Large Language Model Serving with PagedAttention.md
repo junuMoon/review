@@ -1,5 +1,5 @@
 # Efficient Memory Management for Large Language Model Serving with PagedAttention
-
+- https://arxiv.org/pdf/2309.06180
 - For each request, this expensive process is repeated until the model out- puts a termination token. This sequential generation process makes the workload memory-bound, underutilizing the computation power of GPUs and limiting the serving throughput.
 - For Transformers, these states consist of the key and value tensors associated with the attention mechanism, commonly referred to as KV cache, which represent the context from earlier tokens to generate new output tokens in sequence.
 
