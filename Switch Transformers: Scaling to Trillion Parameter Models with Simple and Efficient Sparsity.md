@@ -1,4 +1,5 @@
 # Switch Transformers: Scaling to Trillion Parameter Models with Simple and Efficient Sparsity
+- https://arxiv.org/pdf/2101.03961
 - we instead propose a sparsely-activated expert model
 - Scaling properties and a benchmark against the strongly tuned T5 model (Raffel et al., 2019) where we measure 7x+ pre-training speedups while still using the same FLOPS per token 
 -	we investigate a fourth axis: increase the parameter count while keeping the floating point operations (FLOPs) per example constant. 
