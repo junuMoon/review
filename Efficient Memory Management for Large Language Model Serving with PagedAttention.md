@@ -65,5 +65,11 @@ $$
   - In the attention layers, the GPU workers read the KV cache according to the block table in the control message.
   - GPU workers send the sampled tokens of this iteration back to the scheduler
 
-## Implementation
+## Ablation Studies
+### Kernel Microbenchmark
+- The dynamic block mapping in PagedAttention affects the performance of the GPU operations involving the stored KV cache, i.e., block read/writes and attention.
+- This leads to 20–26% higher attention kernel latency, com- pared to the highly-optimized FasterTransformer implemen- tation.
+- The overhead is small as it only affects the attention operator but not the other operators in the model, such as Linear.
 
+### Impact of Block Size
+- Larger block sizes significantly degrade the performance since the sequences become shorter than the block sizes.
