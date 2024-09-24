@@ -7,6 +7,7 @@ https://www.youtube.com/watch?v=l8pRSuU81PU&t=271s
   - 가중치 초기화에서 1/root(N)으로 스케일링하여 뒤쪽 레이어의 학습 기울기를 작게 -> 기울기 폭발/소실 방지
 - Loss Scaling: 낮은 정밀도에서 기울기 값에서 언더플로우가 발생하는 것을 방지. 손실 함수에 스케일 팩터를 곱해서 값을 키우고, 가중치를 업데이트하기 전에 다시 스케일로 나눠 값을 되돌리는 것.
 - TF32
+  - `torch.set_float32_matmul_precision('high')`: float32 matrix multiplications either use the TensorFloat32 datatype (10 mantissa bits explicitly stored) or treat each float32 number as the sum of two bfloat16 numbers(approximately 16 mantissa bits with 14 bits explicitly stored), if the appropriate fast matrix multiplication algorithms are available.  Otherwise float32 matrix multiplications are computed as if the precision is "highest".  See below for more information on the bfloat16 approach.
 
 ```
 네, A100 Tensor Core의 TF32(Tensor Float 32)에 대해 자세히 설명해 드리겠습니다.
@@ -68,4 +69,10 @@ TF32는 NVIDIA가 A100 GPU에서 도입한 새로운 부동소수점 형식입�
 TF32는 딥러닝 및 AI 워크로드에 최적화된 형식으로, 정밀도와 성능 사이의 균형을 잘 맞추고 있습니다. A100 GPU를 사용하는 대규모 AI 프로젝트에서 큰 성능 향상을 기대할 수 있으며, 특히 기존 FP32 코드를 거의 수정하지 않고도 이점을 얻을 수 있다는 점이 큰 장점입니다.
 ```
 
+- loss, softmax layers are more susceptible to precision changes whethere major multiplies are more robust.
+- `torch.compile`: Speedup mainly comes from reducing Python overhead and GPU read/writes, ...
+  - w/o: step 80, loss: 5.921393871307373, dt: 423.49ms, tok/sec: 19344.00
+  - w/ + compile, bf16 autocast: step 80, loss: 6.080526828765869, dt: 153.01ms, tok/sec: 53539.69
+  - w/ + Flash Attention: step 80, loss: 5.925067901611328, dt: 138.27ms, tok/sec: 59245.93
+    - https://github.com/ELS-RD/kernl/blob/main/tutorial/4%20-%20flash%20attention.ipynb
 - 
