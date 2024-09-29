@@ -2,6 +2,9 @@
 
 https://www.youtube.com/watch?v=l8pRSuU81PU&t=271s
 
+- 임베딩 레이어란: 이산적인(discrete) 입력을 연속적인(continuous) 벡터 공간으로 변환하는 레이어
+  - GPT 임베딩 레이어 = 토큰 임베딩 + 위치 임베딩
+  - 토큰 임베딩: 각 기호에 고유한 ID를 부여. 이 ID를 기반으로 고정된 길이의 벡터로 변환. 학습을 통한 최적화.
 - Dead RELU Problem: The “dead ReLU problem” occurs when neurons in a ReLU (Rectified Linear Unit) activated network only output zero. This happens when the weighted sum of the neuron’s inputs plus the bias term is less than or equal to zero, causing the ReLU function to output zero. As a result, the neuron stops learning, since the gradient during backpropagation is also zero. This can lead to significant portions of the network becoming inactive and not contributing to the model’s training.
 - A modified initialization which accounts for the accumulation on the residual path with model depth is used. We scale the weights of residual layers at initialization by a factor of 1/√N where N is the number of residual layers
   - 가중치 초기화에서 1/root(N)으로 스케일링하여 뒤쪽 레이어의 학습 기울기를 작게 -> 기울기 폭발/소실 방지
@@ -75,4 +78,50 @@ TF32는 딥러닝 및 AI 워크로드에 최적화된 형식으로, 정밀도와
   - w/ + compile, bf16 autocast: step 80, loss: 6.080526828765869, dt: 153.01ms, tok/sec: 53539.69
   - w/ + Flash Attention: step 80, loss: 5.925067901611328, dt: 138.27ms, tok/sec: 59245.93
     - https://github.com/ELS-RD/kernl/blob/main/tutorial/4%20-%20flash%20attention.ipynb
+- cosine decay: we use cosine decay for learning rate down to 10% of its value, over 260 billion tokens (after 260 billion tokens, training continues at 10% of the original learning rate). There is a linear LR warmup over the first 375 million tokens.
+- gradient clipping: 기울기 폭발을 방지하는 방법. 임계값이 넘어가면 기울기를 L2 norm으로 나눠 clipping을 해준다.
+
+```python
+def get_lr(step):
+    # 1) linear warmup for warmup_iters steps
+    if step < warmup_steps:
+        return max_lr * (step + 1) / warmup_steps
+    # 2) if lr > lr_decay_iters, return min learning late
+    if step > max_steps:
+        return min_lr
+    # 3) in between, use cosine decay down to min learning rate
+    decay_ratio = (step - warmup_steps) / (max_steps - warmup_steps)
+    assert 0 <= decay_ratio <= 1
+    coef = 0.5 * (1.0 + math.cos(math.pi * decay_ratio))
+    return min_lr + coef * (max_lr - min_lr)
+```
+
+- weight decay: All models use weight decay of 0.1 to provide a small amount of regularization.
+  - L' = L + (λ/2) * ||w||^2
+  - 기존 로스 값에 regulator를 추가하여 큰 가중치에 대하여 패널티를 줌.
+  - only decaying embedding and matmul layers
+
+```python
+    def configure_optimizers(self, weight_decay, learning_rate, device):
+        # start with all of the candidate parameters (that require grad)
+        param_dict = {pn: p for pn, p in self.named_parameters() if p.requires_grad}
+        # create optim groups. Any parameters that is 2D will be weight decayed, otherwise no.
+        decay_params = [p for n, p in param_dict.items() if p.dim() >= 2]
+        nodecay_params = [p for n, p in param_dict.items() if p.dim() < 2]
+        optim_groups = [
+            {"params": decay_params, "weight_decay": weight_decay},
+            {"params": nodecay_params, "weight_decay": 0.0},
+        ]
+        num_decay_params = sum(p.numel() for p in decay_params)
+        num_nodecay_params = sum(p.numel() for p in nodecay_params)
+        print(f"num decayed parameter tensors: {len(decay_params)}, with {num_decay_params:,} params")
+        print(f"num non-decayed parameter tensors: {len(nodecay_params)}, with {num_nodecay_params:,} params")
+        # Create AdamW optimizer and use the fuse version if it is available
+        fused_available = 'fused' in inspect.signature(torch.optim.AdamW).parameters
+        use_fused = fused_available and 'cuda' in device
+        print(f"using fused AdamW: {use_fused}")
+        return torch.optim.AdamW(optim_groups, lr=learning_rate, betas=(0.9, 0.95), eps=1e-8, fused=use_fused)
+```
+
+- gradient accumulation
 - 
