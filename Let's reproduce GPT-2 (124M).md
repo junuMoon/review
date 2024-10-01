@@ -123,5 +123,9 @@ def get_lr(step):
         return torch.optim.AdamW(optim_groups, lr=learning_rate, betas=(0.9, 0.95), eps=1e-8, fused=use_fused)
 ```
 
-- gradient accumulation
-- 
+- gradient accumulation: Gradient를 n step 동안 누적 후 optimization step을 진행. 메모리가 적은 상황에서 큰 배치의 안정적인 학습을 대체하기 위함.
+- Distributed Data Parallel: https://tutorials.pytorch.kr/intermediate/ddp_tutorial.html
+- multiprocessing.Pool.imap: A lazier version of map(). 결과를 준비되는 대로 하나씩 반환하는 이터레이터를 생성.
+- multinomial: 다항분포. torch.multionomial은 input을 상대 확률로 보고 sample n개를 뽑음.
+- `torch.gather`: https://www.youtube.com/watch?v=wEpnw_FDPu8 ... 머리 터진다
+- `torch.unsqueeze`: 차원 수가 1인 차원을 지정한 dim에 생성
