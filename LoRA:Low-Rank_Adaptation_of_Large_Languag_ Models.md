@@ -44,7 +44,6 @@ Superposition은 제한된 리소스로 많은 정보를 표현하는 방법을 
 결론적으로, 이 연구 결과는 superposition 이론을 직접적으로 언급하지는 않지만, 모델의 효율적인 정보 인코딩과 표현 능력을 보여줌으로써 superposition의 개념을 간접적으로 지지합니다. 이는 신경망이 어떻게 제한된 리소스로 복잡한 정보를 효과적으로 처리할 수 있는지에 대한 통찰을 제공합니다.
 ```
 
-
 ## Further questions
 1) Given a parameter budget constraint, which subset of weight matrices in a pre-trained Transformer should we adapt to maximize downstream performance?
    - <img width="824" alt="image" src="https://github.com/junuMoon/review/assets/52732827/59588737-79e4-423c-91b8-fc4eebe7fca3">
@@ -55,3 +54,14 @@ Superposition은 제한된 리소스로 많은 정보를 표현하는 방법을 
 3) What is the connection between ∆W and W? Does ∆W highly correlate with W? How large is ∆W comparing to W?
    - Second, instead of repeating the top singular directions of W, ∆W only amplifies directions that are not emphasized in W. Third, the amplification factor is rather huge: 21.5 ≈ 6.91/0.32 for r = 4. See Section H.4 for why r = 64 has a smaller amplification factor.
    - This suggests that the low-rank adaptation matrix potentially amplifies the important features for specific downstream tasks that were learned but not emphasized in the general pre-training model.
+
+
+## 추가 학습
+
+![image](https://github.com/user-attachments/assets/5f233909-1cfe-4a63-8b8c-b5724bf70690)
+
+- d = 4096, r= 16일 때,
+  - W(4096, 4096)의 파라미터 수: 4096 ** 2 = 16_777_216
+  - A(4096, 16), B(16, 4096) 파라미터 수의 합: 4096 * 16 + 16 * 4096 = 65_536 + 65_536 = 131_072
+- 비율: 131_072 / 16_777_216 = 0.0078125
+- 
